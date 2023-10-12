@@ -1,6 +1,8 @@
-NtyCo项目分析：
+## NtyCo项目分析：
 
 项目简要说明：NtyCo是github上一位作者用纯C版本的协程实现。
+
+---
 
 先来看一下项目结构：
 
@@ -11,6 +13,8 @@ NtyCo项目分析：
 - websocket
 
 主要分析core目录下的内容。**分析一个项目最好的办法就是从样例出发**
+
+---
 
 挑选sample/nty_server.c为样例入手，分析NtyCo的实现原理。
 
@@ -288,7 +292,7 @@ int nty_accept(){
 }
 `````
 
-没错，可以自信的调用accept了，因为你知道事件已经到来了，就等着你accept()呢。::smile::不是你在等事件到来了，是事件在等你去处理了哦！
+没错，可以自信的调用accept了，因为你知道事件已经到来了，就等着你accept()呢。:smile:不是你在等事件到来了，是事件在等你去处理了哦！
 
 到这里，也证明了我们之前对nty_accept()的猜想。nty_accept()的使命也干完了，它的工作其实也是类似与accept()的，
 
@@ -305,5 +309,21 @@ void server(){
 	}
 }
 `````
-没错，在得到cli_fd之后，又创建了一个协程去处理这个fd对应的事件。又回到我们一开始的地方。
+没错，在得到cli_fd之后，又创建了一个协程去处理这个fd对应的事件。又回到我们一开始分析创建协程的地方
+
+最后我们回到nty_server.c/main()当中：
+```c
+int main(){
+	...
+	for(){
+		nty_cortoutine_create();
+	}
+
+	nty_schedule_run();
+
+	return 0;
+}
+`````
+
+最后调用了nty_schedule_run()执行调度器，main从此也可以称为一个协程了，里面跑着nty_schedule_run();
 
